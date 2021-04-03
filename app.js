@@ -2,10 +2,11 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const mongoose = require("mongoose");
+const checkAuth = require("./api/middlewares/checkAuth");
 
 mongoose.connect(
   `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@cluster0.xsgi4.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
-  { useNewUrlParser: true, useUnifiedTopology: true }
+  { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }
 );
 
 mongoose.connection.on("connected", () => {
@@ -17,6 +18,7 @@ const categoriesRoutes = require("./api/routes/catagories");
 const usersRoutes = require("./api/routes/users");
 
 app.use(morgan("dev"));
+app.use("/uploads", express.static("uploads"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -35,7 +37,7 @@ app.use((req, res, next) => {
 
 //Routes
 app.use("/articles", articlesRoutes);
-app.use("/categories", categoriesRoutes);
+app.use("/categories", checkAuth, categoriesRoutes);
 app.use("/users", usersRoutes);
 
 app.use((req, res, next) => {

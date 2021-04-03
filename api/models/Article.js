@@ -10,6 +10,7 @@ const articleSchema = mongoose.Schema({
     required: true,
     ref: "Category",
   },
+  image: { type: String },
 });
 
 module.exports = mongoose.model("Article", articleSchema);

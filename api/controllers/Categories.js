@@ -44,28 +44,42 @@ module.exports = {
   },
   updateCategory: (req, res) => {
     const categoryId = req.params.categoryId;
-
-    Category.update({ _id: categoryId }, req.body)
-      .then(() => {
-        res.status(200).json({
-          message: "Category Updated",
-        });
+    Category.findById(categoryId)
+      .then((category) => {
+        if (!category) {
+          return res.status(404).json({ message: "Category not found" });
+        }
       })
-      .catch((error) => {
-        res.status(500).json({ error });
+      .then(() => {
+        Category.updateOne({ _id: categoryId }, req.body)
+          .then(() => {
+            res.status(200).json({
+              message: "Category Updated",
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ error });
+          });
       });
   },
   deleteCategory: (req, res) => {
     const categoryId = req.params.categoryId;
-
-    Category.deleteOne({ _id: categoryId })
-      .then(() => {
-        res.status(200).json({
-          message: `Delete article ${categoryId} now my friend`,
-        });
+    Category.findById(categoryId)
+      .then((category) => {
+        if (!category) {
+          return res.status(404).json({ message: "Category not found" });
+        }
       })
-      .catch((error) => {
-        res.status(500).json({ error });
+      .then(() => {
+        Category.deleteOne({ _id: categoryId })
+          .then(() => {
+            res.status(200).json({
+              message: `Delete category ${categoryId} now my friend`,
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ error });
+          });
       });
   },
 };

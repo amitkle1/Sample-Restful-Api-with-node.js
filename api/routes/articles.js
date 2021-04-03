@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("../middlewares/upload");
+const checkAuth = require("../middlewares/checkAuth");
 
 const {
   getAllArticles,
@@ -10,8 +12,8 @@ const {
 } = require("../controllers/articles");
 
 router.get("/", getAllArticles);
-router.post("/", createArticle);
 router.get("/:articleId", getArticle);
-router.patch("/:articleId", updateArticle);
-router.delete("/:articleId", deleteArticle);
+router.post("/", checkAuth, upload.single("image"), createArticle);
+router.patch("/:articleId", checkAuth, updateArticle);
+router.delete("/:articleId", checkAuth, deleteArticle);
 module.exports = router;

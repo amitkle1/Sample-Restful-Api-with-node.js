@@ -16,6 +16,7 @@ module.exports = {
       });
   },
   createArticle: (req, res) => {
+    const { path: image } = req.file;
     const { title, description, content, categoryId } = req.body;
 
     Category.findById(categoryId)
@@ -31,6 +32,7 @@ module.exports = {
           description,
           content,
           categoryId,
+          image: image.replace("\\", "/"),
         });
 
         return article.save();
@@ -56,8 +58,40 @@ module.exports = {
   },
   updateArticle: (req, res) => {
     const articleId = req.params.articleId;
+    const { categoryId } = req.body;
 
-    Article.update({ _id: articleId }, req.body)
+    Article.findById(articleId)
+      .then((article) => {
+        if (!article) {
+          return res.status(404).json({
+            message: "Article not found",
+          });
+        }
+      })
+      .then(() => {
+        if (categoryId) {
+          Category.findById(categoryId)
+            .then((category) => {
+              if (!category) {
+                return res.status(404).json({
+                  message: "Category not found",
+                });
+              }
+              return Article.updateOne({ _id: articleId }, req.body);
+            })
+
+            .then(() => {
+              res.status(200).json({
+                message: "Update a new article",
+              });
+            })
+            .catch((error) => {
+              res.status(500).json({ error });
+            });
+        }
+      });
+
+    Article.updateOne({ _id: articleId }, req.body)
       .then(() => {
         res.status(200).json({
           message: "Article Updated",
@@ -70,14 +104,22 @@ module.exports = {
   deleteArticle: (req, res) => {
     const articleId = req.params.articleId;
 
-    Article.deleteOne({ _id: articleId })
-      .then(() => {
-        res.status(200).json({
-          message: `Delete article ${articleId} now my friend`,
-        });
+    Article.findById(articleId)
+      .then((article) => {
+        if (!article) {
+          return res.status(404).json({ message: "Article not found" });
+        }
       })
-      .catch((error) => {
-        res.status(500).json({ error });
+      .then(() => {
+        Article.deleteOne({ _id: articleId })
+          .then(() => {
+            res.status(200).json({
+              message: `Delete article ${articleId} now my friend`,
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ error });
+          });
       });
   },
 };
